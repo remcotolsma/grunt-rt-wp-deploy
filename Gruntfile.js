@@ -30,27 +30,18 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     rt_wp_deploy: {
-      default_options: {
+      woocommerce_nl: {
         options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
+          svnUrl: 'http://plugins.svn.wordpress.org/woocommerce-nl/',
+          svnDir: 'svn',
+          deployDir: 'deploy'
         }
       }
     },
 
     // Unit tests.
     nodeunit: {
-      tests: ['test/*_test.js']
+      tests: []
     }
 
   });
@@ -68,6 +59,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['clean', 'rt_wp_deploy', 'nodeunit']);
 
   // By default, lint and run all tests.
-  grunt.registerTask('default', ['jshint', 'test']);
+  //grunt.registerTask('default', ['jshint', 'test']);
+  grunt.registerTask('default', ['rt_wp_deploy']);
 
 };

@@ -12,39 +12,77 @@ module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding task
   // creation: http://gruntjs.com/creating-tasks
+  var cp = require('child_process');
+  var path = require('path') ;
+
+  // @see http://gruntjs.com/creating-plugins
+  // @see https://github.com/stephenharris/grunt-wp-deploy/blob/master/tasks/wp_deploy.js
+  // @see http://gruntjs.com/api/grunt.file
 
   grunt.registerMultiTask('rt_wp_deploy', 'Deploys a build directory to the WordPress SVN repo.', function() {
+    var done = this.async();
+
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
+      svnUrl: false,
+      svnDir: false,
+      deployDir: false
+	});
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
+    // @see http://nodejs.org/api/path.html
+    var svnDir = path.resolve( options.svnDir );
+    var deployDir = path.resolve( options.deployDir )
 
-      // Handle options.
-      src += options.punctuation;
+    // Subversion checkout
+    grunt.log.writeln( 'Subversion checkout...' );
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
+    var process = cp.execFile( 'svn', ['checkout',options.svnUrl,options.svnDir], {}, function(error,stdout,stderr) {
+      grunt.log.writeln( 'Subversion checkout done.' );
 
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
+      // Subversion update
+      grunt.log.writeln( 'Subversion update...' );
+
+      cp.execFile( 'svn', ['update'], { cwd: options.svnDir }, function(error,stdout,stderr) {
+        grunt.log.writeln( 'Subversion update done.' );
+        
+        // Delete trunk
+        var svnTrunkDir = svnDir + '/trunk';
+
+        grunt.log.writeln('Delete Subversion trunk');
+
+        grunt.file.delete( svnTrunkDir );
+        
+        // Copy deploy to trunk
+        //grunt.file.copy( deployDir, svnTrunkDir );
+        
+        grunt.log.writeln( 'Copy...');
+        cp.execFile( 'cp', ['-R',deployDir,svnTrunkDir], function(error,stdout,stderr) {
+        	grunt.log.writeln( 'Copy done');
+
+            // Subverion add
+            grunt.log.writeln( 'Subversion add...' );
+
+            cp.exec( 'svn add --force * --auto-props --parents --depth infinity -q', { cwd: options.svnDir }, function() {
+                grunt.log.writeln( 'Subversion add done' );
+
+                // Subversion remove
+                grunt.log.writeln( 'Subversion remove...' );
+
+                cp.exec( "svn rm $( svn status | sed -e '/^!/!d' -e 's/^!//' )", { cwd: options.svnDir }, function() {
+                	grunt.log.writeln( 'Subversion remove done' );
+                	
+                	grunt.log.writeln( 'Subversion tag...' );
+
+                	cp.execFile( 'svn', ['copy','trunk','tags/2.0.0'], { cwd: options.svnDir },  function(error,stdout,stderr) {
+                		grunt.log.writeln( 'Subversion tag done' );
+
+                		done();
+                	});
+                });
+            });
+        });
+
+      });
+    });	
   });
-
 };
