@@ -51,11 +51,10 @@ module.exports = function(grunt) {
         grunt.log.writeln('Delete Subversion trunk');
 
         grunt.file.delete( svnTrunkDir );
-        
-        // Copy deploy to trunk
-        //grunt.file.copy( deployDir, svnTrunkDir );
-        
+
+        // Copy deploy to trunk        
         grunt.log.writeln( 'Copy...');
+
         cp.execFile( 'cp', ['-R',deployDir,svnTrunkDir], function(error,stdout,stderr) {
         	grunt.log.writeln( 'Copy done');
 
