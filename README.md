@@ -87,4 +87,5 @@ Default value: `false`
 *	http://gruntjs.com/api/grunt.file
 *	https://github.com/stephenharris/grunt-wp-deploy
 *	http://www.slideshare.net/cageNL/wordcamp-netherlands-2014
+*	https://grunt-rt-wp-deploy.googlecode.com/
 
