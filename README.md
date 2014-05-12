@@ -35,6 +35,28 @@ grunt.initConfig({
 });
 ```
 
+### Usage Examples
+
+#### This Grunt Plugin
+
+```js
+grunt.initConfig({
+  rt_wp_deploy: {
+    app: {
+      options: {
+        svnUrl: 'https://grunt-rt-wp-deploy.googlecode.com/svn/',
+        svnDir: 'svn',
+        svnUsername: 'info@remcotolsma.nl',
+        deployDir: 'deploy',
+        version: '<%= pkg.version %>',
+      }
+    }
+  },
+});
+```
+
+#### Custom Options
+
 ### Options
 
 #### options.svnUrl
