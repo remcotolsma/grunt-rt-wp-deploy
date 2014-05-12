@@ -1,6 +1,14 @@
+# Node
 node_modules
 npm-debug.log
 tmp
 
+# Deploy
 deploy
+
+# SVN
 svn
+
+# Eclipse
+.project
+.settings
