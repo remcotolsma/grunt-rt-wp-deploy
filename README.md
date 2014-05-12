@@ -39,7 +39,7 @@ grunt.initConfig({
 
 #### options.svnUrl
 Type: `String`
-Default value: `''`
+Default value: `false`
 
 A string value that is used to do something with whatever.
 
