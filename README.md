@@ -55,7 +55,6 @@ grunt.initConfig({
 });
 ```
 
-#### Custom Options
 
 ### Options
 
@@ -80,3 +79,12 @@ Default value: `'deploy'`
 #### options.version
 Type: `String`
 Default value: `false`
+
+
+### Resources
+
+*	http://gruntjs.com/creating-plugins
+*	http://gruntjs.com/api/grunt.file
+*	https://github.com/stephenharris/grunt-wp-deploy
+*	http://www.slideshare.net/cageNL/wordcamp-netherlands-2014
+

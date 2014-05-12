@@ -14,11 +14,6 @@ module.exports = function( grunt ) {
 	var cp = require( 'child_process' );
 	var path = require( 'path' );
 
-	// @see http://gruntjs.com/creating-plugins
-	// @see https://github.com/stephenharris/grunt-wp-deploy/blob/master/tasks/wp_deploy.js
-	// @see http://gruntjs.com/api/grunt.file
-	// @see http://www.slideshare.net/cageNL/wordcamp-netherlands-2014
-
 	grunt.registerMultiTask( 'rt_wp_deploy', 'Deploys a build directory to the WordPress SVN repo.', function() {
 		var done = this.async();
 
