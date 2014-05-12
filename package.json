@@ -38,6 +38,12 @@
     "grunt": "~0.4.4"
   },
   "keywords": [
-    "gruntplugin"
+    "gruntplugin",
+    "wordpress",
+    "subversion",
+    "svn",
+    "wp",
+    "deploy",
+    "build"
   ]
 }
