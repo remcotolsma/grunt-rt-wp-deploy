@@ -35,55 +35,57 @@ grunt.initConfig({
 });
 ```
 
+### Usage Examples
+
+#### This Grunt Plugin
+
+```js
+grunt.initConfig({
+  rt_wp_deploy: {
+    app: {
+      options: {
+        svnUrl: 'https://grunt-rt-wp-deploy.googlecode.com/svn/',
+        svnDir: 'svn',
+        svnUsername: 'info@remcotolsma.nl',
+        deployDir: 'deploy',
+        version: '<%= pkg.version %>',
+      }
+    }
+  },
+});
+```
+
+
 ### Options
 
-#### options.separator
+#### options.svnUrl
 Type: `String`
-Default value: `',  '`
+Default value: `false`
 
 A string value that is used to do something with whatever.
 
-#### options.punctuation
+#### options.svnDir
 Type: `String`
-Default value: `'.'`
+Default value: `'svn'`
 
-A string value that is used to do something else with whatever else.
+#### options.svnUsername
+Type: `String`
+Default value: `false`
 
-### Usage Examples
+#### options.deployDir
+Type: `String`
+Default value: `'deploy'`
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+#### options.version
+Type: `String`
+Default value: `false`
 
-```js
-grunt.initConfig({
-  rt_wp_deploy: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+### Resources
 
-```js
-grunt.initConfig({
-  rt_wp_deploy: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
+*	http://gruntjs.com/creating-plugins
+*	http://gruntjs.com/api/grunt.file
+*	https://github.com/stephenharris/grunt-wp-deploy
+*	http://www.slideshare.net/cageNL/wordcamp-netherlands-2014
+*	https://grunt-rt-wp-deploy.googlecode.com/
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
-
-## Release History
-_(Nothing yet)_
