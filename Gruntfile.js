@@ -84,6 +84,6 @@ module.exports = function(grunt) {
   // By default, lint and run all tests.
   //grunt.registerTask('default', ['jshint', 'test']);
   grunt.registerTask('deploy', ['clean:deploy','copy:deploy']);
-  grunt.registerTask('default', ['rt_wp_deploy']);
+  grunt.registerTask('default', ['deploy','rt_wp_deploy']);
 
 };
