@@ -8,79 +8,128 @@
 
 'use strict';
 
-module.exports = function(grunt) {
+module.exports = function( grunt ) {
+	// Please see the Grunt documentation for more information regarding task
+	// creation: http://gruntjs.com/creating-tasks
+	var cp = require( 'child_process' );
+	var path = require( 'path' );
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
-  var cp = require('child_process');
-  var path = require('path') ;
+	// @see http://gruntjs.com/creating-plugins
+	// @see https://github.com/stephenharris/grunt-wp-deploy/blob/master/tasks/wp_deploy.js
+	// @see http://gruntjs.com/api/grunt.file
+	// @see http://www.slideshare.net/cageNL/wordcamp-netherlands-2014
 
-  // @see http://gruntjs.com/creating-plugins
-  // @see https://github.com/stephenharris/grunt-wp-deploy/blob/master/tasks/wp_deploy.js
-  // @see http://gruntjs.com/api/grunt.file
+	grunt.registerMultiTask( 'rt_wp_deploy', 'Deploys a build directory to the WordPress SVN repo.', function() {
+		var done = this.async();
 
-  grunt.registerMultiTask('rt_wp_deploy', 'Deploys a build directory to the WordPress SVN repo.', function() {
-    var done = this.async();
+		// Merge task-specific and/or target-specific options with these defaults.
+		var options = this.options( {
+			svnUrl: false,
+			svnDir: 'svn',
+			svnUsername: false,
+			deployDir: 'deploy',
+			version: false
+		} );
 
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      svnUrl: false,
-      svnDir: false,
-      deployDir: false
-	});
+		// @see http://nodejs.org/api/path.html
+		var svnDir      = path.resolve( options.svnDir );
+		var svnTrunkDir = svnDir + '/trunk';
+		var svnTagDir   = svnDir + '/tags/' + options.version;
 
-    // @see http://nodejs.org/api/path.html
-    var svnDir = path.resolve( options.svnDir );
-	var svnTrunkDir = svnDir + '/trunk';
-    var deployDir = path.resolve( options.deployDir );
+		var deployDir = path.resolve( options.deployDir );
 
-    // Subversion checkout
-    grunt.log.writeln( 'Subversion checkout...' );
+		// Subversion checkout
+		grunt.log.writeln( 'Subversion checkout...' );
+		
+		var svnArgs = function( args ) {
+			if ( options.svnUsername ) {
+				args.push( '--username' );
+				args.push( options.svnUsername );
+			}
+			
+			return args;
+		};
 
-    grunt.util.spawn({cmd: 'svn', args: ['checkout',options.svnUrl,options.svnDir,'--username', 'info@remcotolsma.nl'], opts: {stdio: 'inherit'}}, function(error, result, code) {
-    	grunt.log.writeln( 'Subversion checkout done.' );
+		var svnUpdate = function() {
+			// Subversion update
+			grunt.log.writeln( 'Subversion update...' );
 
-        // Subversion update
-        grunt.log.writeln( 'Subversion update...' );
+			grunt.util.spawn( { cmd: 'svn', args: svnArgs( ['update'] ), opts: {stdio: 'inherit',cwd: svnDir} }, function(error, result, code) {
+				grunt.log.writeln( 'Subversion update done.' );
 
-        grunt.util.spawn( { cmd: 'svn', args: ['update','--username', 'info@remcotolsma.nl'], opts: {stdio: 'inherit',cwd: svnDir} }, function(error, result, code) {
-        	grunt.log.writeln( 'Subversion update done.' );
+				// Delete trunk
+				grunt.file.delete( svnTrunkDir );
+	
+				grunt.log.writeln( 'Subversion trunk deleted.' );
+	
+				// Copy deploy to trunk
+				grunt.log.writeln( 'Copy deploy to trunk...');
+	
+				grunt.util.spawn( { cmd: 'cp', args: ['-R',deployDir,svnTrunkDir], opts: {stdio: 'inherit'} }, function(error, result, code) {
+					grunt.log.writeln( 'Copy deploy to trunk done' );
+	
+					// Subverion add
+					grunt.log.writeln( 'Subversion add...' );
+	
+					grunt.util.spawn({cmd: 'svn',args: ['add','.','--force','--auto-props','--parents','--depth','infinity'],opts: {stdio: 'inherit',cwd: svnDir}}, function(error, result, code) {
+						grunt.log.writeln( 'Subversion add done.' );
+	
+						// Subversion remove
+						grunt.log.writeln( 'Subversion remove...' );
+	
+						cp.exec( "svn rm $( svn status | sed -e '/^!/!d' -e 's/^!//' )", { cwd: options.svnDir }, function() {
+							grunt.log.writeln( 'Subversion remove done.' );
+	
+							// Subversion tag
+							grunt.log.writeln( 'Check if Subversion tag dir exists...' );
 
-        	// Delete trunk
-        	grunt.file.delete( svnTrunkDir );
+							if ( grunt.file.isDir( svnTagDir ) ) {
+								grunt.log.writeln( 'Subversion tag already exists.' );
+								
+								svnCommit();
+							} else {
+								grunt.log.writeln( 'Subversion tag...' );
+	
+								grunt.util.spawn({cmd: 'svn',args: ['copy',svnTrunkDir,svnTagDir],opts: {stdio: 'inherit', cwd: options.svnDir}},  function(error, result, code) {
+									grunt.log.writeln( 'Subversion tag done' );
+	
+									svnCommit();
+								} );
+							}
+						} );
+					} );
+				} );
+			} );
+		};
+		
+		var svnCommit = function() {
+			var commitMessage = 'Deploy from Git (' + options.version + ')';
 
-        	grunt.log.writeln( 'Subversion trunk deleted.' );
+			grunt.log.writeln( 'Subversion commit...' );
 
-        	// Copy deploy to trunk
-            grunt.log.writeln( 'Copy deploy to trunk...');
+			grunt.util.spawn({cmd: 'svn',args: svnArgs( ['commit','-m',commitMessage] ),opts: {stdio: 'inherit', cwd: options.svnDir}},  function(error, result, code) {
+				grunt.log.writeln( 'Subversion commit done.' );
 
-        	grunt.util.spawn( { cmd: 'cp', args: ['-R',deployDir,svnTrunkDir], opts: {stdio: 'inherit'} }, function(error, result, code) {
-            	grunt.log.writeln( 'Copy deploy to trunk done' );
+				done();
+			} );
+		};
+		
+		grunt.log.writeln( 'Check if Subversion dir exists...' );
 
-                // Subverion add
-                grunt.log.writeln( 'Subversion add...' );
+		if ( grunt.file.isDir( svnDir ) ) {
+			grunt.log.writeln( 'Subversion dir exists.' );
+			
+			svnUpdate();
+		} else {
+			grunt.log.writeln( 'Subversion dir does not exists.' );
 
-                grunt.util.spawn({cmd: 'svn',args: ['add','--force','.','--auto-props','--parents','--depth','infinity'],opts: {stdio: 'inherit',cwd: svnDir}}, function(error, result, code) {
-                  grunt.log.writeln( 'Subversion add done.' );
+			grunt.log.writeln( 'Subversion checkout...' );
 
-                  // Subversion remove
-                  grunt.log.writeln( 'Subversion remove...' );
-
-                  cp.exec( "svn rm $( svn status | sed -e '/^!/!d' -e 's/^!//' )", { cwd: options.svnDir }, function() {
-                	  grunt.log.writeln( 'Subversion remove done.' );
-
-                	  // Subversion tag
-                	  grunt.log.writeln( 'Subversion tag...' );
-
-                	  grunt.util.spawn({cmd: 'svn',args: ['copy','trunk','tags/2.0.0'],opts: {stdio: 'inherit', cwd: options.svnDir}},  function(error, result, code) {
-                  		grunt.log.writeln( 'Subversion tag done' );
-
-                  		done();
-                  	});
-                  });
-                });
-        	});
-        });
-    });
-  });
+			grunt.util.spawn({cmd: 'svn', args: svnArgs( ['checkout',options.svnUrl,options.svnDir] ), opts: {stdio: 'inherit'}}, function(error, result, code) {
+				grunt.log.writeln( 'Subversion checkout done.' );
+				
+				svnUpdate();
+			} );
+		}
+	} );
 };

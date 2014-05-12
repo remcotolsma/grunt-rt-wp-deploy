@@ -12,6 +12,8 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+	pkg: grunt.file.readJSON( 'package.json' ),
+
     jshint: {
       all: [
         'Gruntfile.js',
@@ -38,8 +40,6 @@ module.exports = function(grunt) {
           '**',
           '!.*',
           '!.*/**',
-          '!Gruntfile.js',
-          '!package.json',
           '!node_modules/**',
 		],
         dest: 'deploy',
@@ -54,7 +54,9 @@ module.exports = function(grunt) {
         options: {
           svnUrl: 'https://grunt-rt-wp-deploy.googlecode.com/svn/',
           svnDir: 'svn',
-          deployDir: 'deploy'
+          svnUsername: 'info@remcotolsma.nl',
+          deployDir: 'deploy',
+          version: '<%= pkg.version %>',
         }
       }
     },
