@@ -55,6 +55,10 @@ grunt.initConfig({
 });
 ```
 
+#### WordPress Plugins
+
+*	https://github.com/pronamic/wp-woocommerce-nl/blob/develop/Gruntfile.js
+
 
 ### Options
 
