@@ -31,57 +31,56 @@ module.exports = function(grunt) {
 
     // @see http://nodejs.org/api/path.html
     var svnDir = path.resolve( options.svnDir );
-    var deployDir = path.resolve( options.deployDir )
+	var svnTrunkDir = svnDir + '/trunk';
+    var deployDir = path.resolve( options.deployDir );
 
     // Subversion checkout
     grunt.log.writeln( 'Subversion checkout...' );
 
-    var process = cp.execFile( 'svn', ['checkout',options.svnUrl,options.svnDir], {}, function(error,stdout,stderr) {
-      grunt.log.writeln( 'Subversion checkout done.' );
+    grunt.util.spawn({cmd: 'svn', args: ['checkout',options.svnUrl,options.svnDir,'--username', 'info@remcotolsma.nl'], opts: {stdio: 'inherit'}}, function(error, result, code) {
+    	grunt.log.writeln( 'Subversion checkout done.' );
 
-      // Subversion update
-      grunt.log.writeln( 'Subversion update...' );
+        // Subversion update
+        grunt.log.writeln( 'Subversion update...' );
 
-      cp.execFile( 'svn', ['update'], { cwd: options.svnDir }, function(error,stdout,stderr) {
-        grunt.log.writeln( 'Subversion update done.' );
-        
-        // Delete trunk
-        var svnTrunkDir = svnDir + '/trunk';
+        grunt.util.spawn( { cmd: 'svn', args: ['update','--username', 'info@remcotolsma.nl'], opts: {stdio: 'inherit',cwd: svnDir} }, function(error, result, code) {
+        	grunt.log.writeln( 'Subversion update done.' );
 
-        grunt.log.writeln('Delete Subversion trunk');
+        	// Delete trunk
+        	grunt.file.delete( svnTrunkDir );
 
-        grunt.file.delete( svnTrunkDir );
+        	grunt.log.writeln( 'Subversion trunk deleted.' );
 
-        // Copy deploy to trunk        
-        grunt.log.writeln( 'Copy...');
+        	// Copy deploy to trunk
+            grunt.log.writeln( 'Copy deploy to trunk...');
 
-        cp.execFile( 'cp', ['-R',deployDir,svnTrunkDir], function(error,stdout,stderr) {
-        	grunt.log.writeln( 'Copy done');
+        	grunt.util.spawn( { cmd: 'cp', args: ['-R',deployDir,svnTrunkDir], opts: {stdio: 'inherit'} }, function(error, result, code) {
+            	grunt.log.writeln( 'Copy deploy to trunk done' );
 
-            // Subverion add
-            grunt.log.writeln( 'Subversion add...' );
+                // Subverion add
+                grunt.log.writeln( 'Subversion add...' );
 
-            cp.exec( 'svn add --force * --auto-props --parents --depth infinity -q', { cwd: options.svnDir }, function() {
-                grunt.log.writeln( 'Subversion add done' );
+                grunt.util.spawn({cmd: 'svn',args: ['add','--force','.','--auto-props','--parents','--depth','infinity'],opts: {stdio: 'inherit',cwd: svnDir}}, function(error, result, code) {
+                  grunt.log.writeln( 'Subversion add done.' );
 
-                // Subversion remove
-                grunt.log.writeln( 'Subversion remove...' );
+                  // Subversion remove
+                  grunt.log.writeln( 'Subversion remove...' );
 
-                cp.exec( "svn rm $( svn status | sed -e '/^!/!d' -e 's/^!//' )", { cwd: options.svnDir }, function() {
-                	grunt.log.writeln( 'Subversion remove done' );
-                	
-                	grunt.log.writeln( 'Subversion tag...' );
+                  cp.exec( "svn rm $( svn status | sed -e '/^!/!d' -e 's/^!//' )", { cwd: options.svnDir }, function() {
+                	  grunt.log.writeln( 'Subversion remove done.' );
 
-                	cp.execFile( 'svn', ['copy','trunk','tags/2.0.0'], { cwd: options.svnDir },  function(error,stdout,stderr) {
-                		grunt.log.writeln( 'Subversion tag done' );
+                	  // Subversion tag
+                	  grunt.log.writeln( 'Subversion tag...' );
 
-                		done();
-                	});
+                	  grunt.util.spawn({cmd: 'svn',args: ['copy','trunk','tags/2.0.0'],opts: {stdio: 'inherit', cwd: options.svnDir}},  function(error, result, code) {
+                  		grunt.log.writeln( 'Subversion tag done' );
+
+                  		done();
+                  	});
+                  });
                 });
-            });
+        	});
         });
-
-      });
-    });	
+    });
   });
 };
