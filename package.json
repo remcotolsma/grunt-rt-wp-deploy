@@ -1,7 +1,7 @@
 {
   "name": "grunt-rt-wp-deploy",
   "description": "Deploys a build directory to the WordPress SVN repo.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/remcotolsma/grunt-rt-wp-deploy",
   "author": {
     "name": "Remco Tolsma",
