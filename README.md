@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> This Grunt plugin is no longer being maintained and developed. An alternative is the Pronamic CLI library: https://github.com/pronamic/pronamic-cli.
+
 # grunt-rt-wp-deploy
 
 > Deploys a build directory to the WordPress SVN repo.
